@@ -1,0 +1,5 @@
+{
+  "name": "KEEVO",
+  "description": "A professional, full-stack financial accounting and business management system (ERP) featuring inventory management, POS, and comprehensive financial reporting.",
+  "requestFramePermissions": ["camera"]
+}

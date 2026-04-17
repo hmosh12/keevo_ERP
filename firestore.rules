@@ -1,0 +1,121 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    function getUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+    
+    function belongsToCompany(companyId) {
+      return isAuthenticated() && getUserData().companyId == companyId;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && (
+        getUserData().role == 'admin' || 
+        (request.auth.token.email == "tmojsd12@gmail.com" && request.auth.token.email_verified == true)
+      );
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /users/{userId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if isAuthenticated() && request.resource.data.uid == request.auth.uid;
+      allow update: if isOwner(userId) || isAdmin();
+    }
+
+    match /companies/{companyId} {
+      allow read: if belongsToCompany(companyId) || isAdmin();
+      allow create: if isAuthenticated();
+      allow update: if (belongsToCompany(companyId) && getUserData().role == 'admin') || isAdmin();
+      
+      match /products/{productId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        // Admin and Accountant can manage products. Cashier can only read.
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /categories/{categoryId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /contacts/{contactId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /expenses/{expenseId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /returns/{returnId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /damaged_items/{damagedId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+      
+      match /transactions/{transactionId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        // ONLY Admin and Accountant can manage accounting transactions.
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /journal_entries/{entryId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+      
+      match /sales/{saleId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        // Admin, Accountant, and Cashier can create sales.
+        // But only Admin/Accountant should ideally update/delete them (though here we allow create for all company members).
+        allow create: if belongsToCompany(companyId) || isAdmin();
+        allow update, delete: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /purchase_orders/{orderId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /sales_orders/{orderId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow write: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+      }
+
+      match /stock_adjustments/{adjustmentId} {
+        allow read: if belongsToCompany(companyId) || isAdmin();
+        allow create: if belongsToCompany(companyId) || isAdmin();
+        allow update, delete: if false; // Adjustments should be immutable
+      }
+
+      match /audit_logs/{logId} {
+        // Only Admin and Accountant can view audit logs
+        allow read: if (belongsToCompany(companyId) && (getUserData().role == 'admin' || getUserData().role == 'accountant')) || isAdmin();
+        // Any authenticated member of the company can create a log entry (triggered by their actions)
+        allow create: if belongsToCompany(companyId) || isAdmin();
+        // Audit logs should never be updated or deleted
+        allow update, delete: if false;
+      }
+    }
+  }
+}

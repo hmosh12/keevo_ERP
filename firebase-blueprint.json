@@ -1,0 +1,254 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile and role information",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["admin", "accountant", "cashier"] },
+        "companyId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role"]
+    },
+    "Company": {
+      "title": "Company",
+      "description": "Business entity information",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "logo": { "type": "string" },
+        "deliveryNumber": { "type": "string" },
+        "address": { "type": "string" },
+        "email": { "type": "string" },
+        "website": { "type": "string" },
+        "currency": { "type": "string" },
+        "ownerId": { "type": "string" },
+        "staffAccounts": { "type": "array" },
+        "isSubscribed": { "type": "boolean", "description": "Whether the company has an active paid subscription" },
+        "licenseStatus": { "type": "string", "enum": ["trial", "active", "expired", "suspended"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "ownerId"]
+    },
+    "Contact": {
+      "title": "Contact",
+      "description": "Customer or Supplier details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "type": { "type": "string", "enum": ["Customer", "Supplier"] },
+        "phone": { "type": "string" },
+        "email": { "type": "string" },
+        "balance": { "type": "number" }
+      },
+      "required": ["name", "type"]
+    },
+    "Expense": {
+      "title": "Expense",
+      "description": "Business expense record",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time" },
+        "description": { "type": "string" },
+        "amount": { "type": "number" },
+        "category": { "type": "string" },
+        "paymentMethod": { "type": "string" }
+      },
+      "required": ["date", "amount", "description"]
+    },
+    "Return": {
+      "title": "Return",
+      "description": "Sales or Purchase return record",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time" },
+        "type": { "type": "string", "enum": ["Sale", "Purchase"] },
+        "contactId": { "type": "string" },
+        "reason": { "type": "string" },
+        "amount": { "type": "number" },
+        "status": { "type": "string" }
+      },
+      "required": ["date", "type", "amount"]
+    },
+    "DamagedItem": {
+      "title": "Damaged Item",
+      "description": "Record of damaged or lost inventory",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time" },
+        "productId": { "type": "string" },
+        "quantity": { "type": "number" },
+        "cost": { "type": "number" },
+        "location": { "type": "string" },
+        "reason": { "type": "string" }
+      },
+      "required": ["date", "productId", "quantity"]
+    },
+    "Product": {
+      "title": "Product",
+      "description": "Inventory item details",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "sku": { "type": "string" },
+        "barcode": { "type": "string" },
+        "categoryId": { "type": "string" },
+        "price": { "type": "number" },
+        "cost": { "type": "number" },
+        "unit": { "type": "string" },
+        "stockQuantity": { "type": "number" },
+        "minStockLevel": { "type": "number" }
+      },
+      "required": ["name", "price", "cost"]
+    },
+    "Category": {
+      "title": "Category",
+      "description": "Product category",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "JournalEntry": {
+      "title": "Journal Entry",
+      "description": "Multi-line accounting journal entry",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date" },
+        "description": { "type": "string" },
+        "reference": { "type": "string" },
+        "lines": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "account": { "type": "string" },
+              "debit": { "type": "number" },
+              "credit": { "type": "number" }
+            },
+            "required": ["account"]
+          }
+        },
+        "totalDebit": { "type": "number" },
+        "totalCredit": { "type": "number" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["date", "description", "lines"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Accounting journal entry",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time" },
+        "description": { "type": "string" },
+        "type": { "type": "string", "enum": ["income", "expense", "journal"] },
+        "amount": { "type": "number" },
+        "accountId": { "type": "string" },
+        "reference": { "type": "string" }
+      },
+      "required": ["date", "amount", "type"]
+    },
+    "Sale": {
+      "title": "Sale",
+      "description": "POS sales record",
+      "type": "object",
+      "properties": {
+        "invoiceNumber": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "customerId": { "type": "string" },
+        "items": { "type": "array" },
+        "subtotal": { "type": "number" },
+        "tax": { "type": "number" },
+        "total": { "type": "number" },
+        "paymentMethod": { "type": "string" },
+        "cashierId": { "type": "string" }
+      },
+      "required": ["invoiceNumber", "date", "total"]
+    },
+    "PurchaseOrder": {
+      "title": "Purchase Order",
+      "description": "Order for inventory from a supplier",
+      "type": "object",
+      "properties": {
+        "orderNumber": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "supplierId": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "status": { "type": "string", "enum": ["Draft", "Sent", "Received", "Cancelled"] }
+      },
+      "required": ["orderNumber", "date", "supplierId", "status"]
+    },
+    "SalesOrder": {
+      "title": "Sales Order",
+      "description": "Order for inventory from a customer",
+      "type": "object",
+      "properties": {
+        "orderNumber": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "customerId": { "type": "string" },
+        "items": { "type": "array" },
+        "total": { "type": "number" },
+        "status": { "type": "string", "enum": ["Draft", "Confirmed", "Shipped", "Delivered", "Cancelled"] }
+      },
+      "required": ["orderNumber", "date", "customerId", "status"]
+    },
+    "StockAdjustment": {
+      "title": "Stock Adjustment",
+      "description": "Manual adjustment of inventory levels",
+      "type": "object",
+      "properties": {
+        "date": { "type": "string", "format": "date-time" },
+        "productId": { "type": "string" },
+        "productName": { "type": "string" },
+        "type": { "type": "string", "enum": ["add", "remove"] },
+        "quantity": { "type": "number" },
+        "reason": { "type": "string", "enum": ["Restock", "Return", "Damage", "Correction"] },
+        "previousStock": { "type": "number" },
+        "newStock": { "type": "number" },
+        "userId": { "type": "string" }
+      },
+      "required": ["date", "productId", "type", "quantity", "reason", "userId"]
+    },
+    "AuditLog": {
+      "title": "Audit Log",
+      "description": "Log of changes to financial data",
+      "type": "object",
+      "properties": {
+        "timestamp": { "type": "string", "format": "date-time" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "action": { "type": "string", "enum": ["create", "update", "delete"] },
+        "entityType": { "type": "string" },
+        "entityId": { "type": "string" },
+        "changes": { "type": "object" },
+        "metadata": { "type": "object" }
+      },
+      "required": ["timestamp", "userId", "action", "entityType", "entityId"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": { "schema": "User", "description": "User profiles" },
+    "/companies/{companyId}": { "schema": "Company", "description": "Company settings" },
+    "/companies/{companyId}/products/{productId}": { "schema": "Product", "description": "Inventory products" },
+    "/companies/{companyId}/categories/{categoryId}": { "schema": "Category", "description": "Product categories" },
+    "/companies/{companyId}/contacts/{contactId}": { "schema": "Contact", "description": "Customers and Suppliers" },
+    "/companies/{companyId}/expenses/{expenseId}": { "schema": "Expense", "description": "Business expenses" },
+    "/companies/{companyId}/returns/{returnId}": { "schema": "Return", "description": "Product returns" },
+    "/companies/{companyId}/damaged_items/{damagedId}": { "schema": "DamagedItem", "description": "Damaged inventory" },
+    "/companies/{companyId}/transactions/{transactionId}": { "schema": "Transaction", "description": "Accounting entries" },
+    "/companies/{companyId}/journal_entries/{entryId}": { "schema": "JournalEntry", "description": "Multi-line journal entries" },
+    "/companies/{companyId}/sales/{saleId}": { "schema": "Sale", "description": "Sales records" },
+    "/companies/{companyId}/purchase_orders/{orderId}": { "schema": "PurchaseOrder", "description": "Purchase orders" },
+    "/companies/{companyId}/sales_orders/{orderId}": { "schema": "SalesOrder", "description": "Sales orders" },
+    "/companies/{companyId}/stock_adjustments/{adjustmentId}": { "schema": "StockAdjustment", "description": "Inventory adjustments" },
+    "/companies/{companyId}/audit_logs/{logId}": { "schema": "AuditLog", "description": "Audit trail for financial changes" }
+  }
+}
